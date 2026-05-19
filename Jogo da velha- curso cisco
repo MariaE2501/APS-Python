@@ -1,0 +1,103 @@
+from random import randrange # Importa uma função que gera números aleatória, o computador escolhe uma jogada aleatória.
+
+print("===== Jogo da velha ===== \n")
+print("Vamos jogar? Legal! Eu começo!")
+
+def display_board(board): # Serve para mostrar o tabuleiro "board", matriz (listas de listas, 3x3)
+print("+-------+-------+-------+")
+for row in range(3):
+print("|       |       |       |")
+for col in range(3):
+print("|   " + str(board[row][col]) + "   ", end="") #"str(board[row][col]" mostra o valor de cada posição (número, x, o)
+print("|")
+print("|       |       |       |")
+print("+-------+-------+-------+")
+
+               
+def enter_move(board): # onde a pessoa joga
+ok = False
+while not ok:
+move = input("\n Sua vez! Digite seu movimento, escolha um valor: ") # pede um numero de 1 a 9
+ok = len(move) == 1 and move >= '1' and move <= '9' # vê se a entrada do usuario é valida ou não
+if not ok:
+print("Má jogada, tente novamente verificando se o valor está correto!") # não, não é - faça a entrada novamente
+continue
+# converte a posiçõa para a matriz
+move = int(move) - 1 # número de célula de 0 a 8
+row = move // 3 # linha da célula
+col = move % 3 # coluna da célula
+sign = board[row][col] # verifica o quadrado selecionado
+ok = sign not in ["O","X"] # verifica se está ocupado 
+if not ok: #está ocupado - para a entrada novamente
+print("\n Esse campo já foi ocupado, tente com um valor diferente!")
+continue
+board[row][col] = "O" # valida a jogada do jogador, define '0' no quadrado selecionado
+
+
+def make_list_of_free_fields(board): # cria lista de suposições livres
+free = []
+# percorre o tabuleiro inteiro
+for row in range(3): # iterar pelas linhas
+for col in range(3): # iterar pelas colunas
+if board[row][col] not in ["O","X"]: # se não tiver x nem o
+free.append((row,col)) # Adiciona na lista, resumindo retorna aonde ainda da pra jogar
+return free
+
+
+def victory_for(board,sgn): # verifica se alguem ganhou. "sgn" pode ser x ou o. (linhas, colunas, diagonais)
+if sgn == "X": # estamos procurando por X?
+who = "Eu" # sim - é do lado do computador
+elif sgn == "O": # ... ou para O?
+who = "Você" # sim - é o nosso lado
+else:
+who = None # não devemos cair aqui!
+cross1 = cross2 = True  # para diagonais
+for rc in range(3):
+if board[rc][0] == sgn and board[rc][1] == sgn and board[rc][2] == sgn: # verifica a linha rc
+return who
+if board[0][rc] == sgn and board[1][rc] == sgn and board[2][rc] == sgn: # verifica a coluna rc
+return who
+if board[rc][rc] != sgn: # verifica a 1ª diagonal
+cross1 = False
+if board[2 - rc][2 - rc] != sgn: # verifica a segunda diagonal
+cross2 = False
+if cross1 or cross2:
+return who  # "return 'me' ou 'you'" se alguem ganhar 
+return None
+
+
+def draw_move(board): # jogada do computador
+free = make_list_of_free_fields(board) #pega casas livres
+cnt = len(free)
+if cnt > 0:
+this = randrange(cnt) #escolhe umaaleatoria
+row, col = free[this]
+board[row][col] = 'X' # marca com x
+
+
+board = [ [3 * j + i + 1 for i in range(3)] for j in range(3) ] # criação do tabuleiro
+board[1][1] = 'X' # computador joga primeiro 'X' no meio
+free = make_list_of_free_fields(board)
+human_turn = True # que turno é agora?
+#loop principal do jogo
+while len(free): #enquanto ouver jogadas
+display_board(board)
+if human_turn:
+enter_move(board)
+victor = victory_for(board,'O') # verifica se alguem ganhou
+else:
+draw_move(board)
+victor = victory_for(board,'X') # verifica se alguem ganhou
+if victor != None:
+break
+human_turn = not human_turn #alterna o turno
+free = make_list_of_free_fields(board)
+
+display_board(board)
+#resultado final
+if victor == "Você":
+print("===== Você ganhou!!!=====")
+elif victor == "Eu":
+print("===== Eu ganhei!!! =====")
+else:
+print("===== Empate!!!=====")
